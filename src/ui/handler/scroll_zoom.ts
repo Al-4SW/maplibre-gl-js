@@ -180,13 +180,17 @@ export class ScrollZoomHandler implements Handler {
 
         this._lastWheelEventTime = now;
 
+        console.log(`+++ WHEEL EVENT +++ | e.deltaMode = ${e.deltaMode} | e.deltaY = ${e.deltaY} | value = ${value}`);
+
         if (value !== 0 && (value % wheelZoomDelta) === 0) {
             // This one is definitely a mouse wheel event.
             this._type = 'wheel';
+            console.log('1 - Wheel Detected');
 
         } else if (value !== 0 && Math.abs(value) < 4) {
             // This one is definitely a trackpad event because it is so small.
             this._type = 'trackpad';
+            console.warn('2 - Trackpad Detected');
 
         } else if (timeDelta > 400) {
             // This is likely a new scroll action.
@@ -195,11 +199,13 @@ export class ScrollZoomHandler implements Handler {
 
             // Start a timeout in case this was a singular event, and delay it by up to 40ms.
             this._timeout = setTimeout(this._onTimeout, 40, e);
+            console.log('3 - New Scroll Event - Start Timeout');
 
         } else if (!this._type) {
             // This is a repeating event, but we don't know the type of event just yet.
             // If the delta per time is small, we assume it's a fast trackpad; otherwise we switch into wheel mode.
             this._type = (Math.abs(timeDelta * value) < 200) ? 'trackpad' : 'wheel';
+            console.log(`4 - Repeating Scroll Event - Type Set to: ${this._type} (Math.abs(timeDelta * value) = ${Math.abs(timeDelta * value)})`);
 
             // Make sure our delayed event isn't fired again, because we accumulate
             // the previous event (which was less than 40ms ago) into this event.
@@ -235,6 +241,8 @@ export class ScrollZoomHandler implements Handler {
 
     _start(e: MouseEvent) {
         if (!this._delta) return;
+
+        console.warn('ZOOM START');
 
         if (this._frameId) {
             this._frameId = null;
@@ -346,6 +354,7 @@ export class ScrollZoomHandler implements Handler {
                 delete this._targetZoom;
                 delete this._lastExpectedZoom;
                 delete this._finishTimeout;
+                console.warn('ZOOM FINISHED');
             }, 200);
         }
 
